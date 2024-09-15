@@ -13,6 +13,8 @@
 				<input type="file" id="InputFile" accept="audio/*" />
 				<div style="margin-left: auto;">
 					<label id="TimerField">00:00:00.00</label>
+				</div>
+				<div style="margin-left: auto;">
 					<input type="button" id="ZoomIn" value="Zoom In" disabled />
 					<input type="button" id="ZoomOut" value="Zoom Out" disabled />
 				</div>
@@ -24,9 +26,10 @@
 			<label for="SpeedVal" id="SpeedHeader">Speed: </label>
 			<label for="SpeedVal" id="SpeedDigits">1.00</label>
 			<input type="range" min="0.2" max="2.0" value="1.0" step="0.01" id="SpeedVal" />
+			<input type="button" id="DefaultSpeed" value="1x Speed" />
 			<br><br>
 			<div style="display: flex;">
-				<input type="button" id="LeftArrowButton" class="OpButton" value="&#x25C0;" />
+				<input type="button" id="LeftArrowButton" class="OpButton" value="&#x25C0;(REW)" />
 				<select id="JumpSelector" class="OpButton">
 					<option value="0.5">0.5 sec.</option>
 					<option value="1.0">1.0 sec.</option>
@@ -39,7 +42,7 @@
 					<option value="4.5">4.5 sec.</option>
 					<option value="5.0">5.0 sec.</option>
 				</select>
-				<input type="button" id="RightArrowButton" class="OpButton" value="&#x25B6;" />
+				<input type="button" id="RightArrowButton" class="OpButton" value="&#x25B6;(FF)" />
 
 				<div style="margin-left: auto;">
 					<label for="LoopFlag">Loop: </label>

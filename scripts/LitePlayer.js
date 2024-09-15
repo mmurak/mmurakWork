@@ -66,6 +66,7 @@ class GlobalManager {
 		this.speedHeader = document.getElementById("SpeedHeader");
 		this.speedDigits = document.getElementById("SpeedDigits");
 		this.speedVal = document.getElementById("SpeedVal");
+		this.defaultSpeed = document.getElementById("DefaultSpeed");
 		this.jumpSelector = document.getElementById("JumpSelector");
 		this.leftArrowButton = document.getElementById("LeftArrowButton");
 		this.rightArrowButton = document.getElementById("RightArrowButton");
@@ -79,6 +80,7 @@ class GlobalManager {
 		this.currentZoomFactor = 10;
 		this.minimumZoomFactor = 10;
 		this.zoomDelta = 10;
+		this.storedZoomFactor = 10;
 		this.timer;
 		this.timerObj = null;
 
@@ -94,6 +96,7 @@ class GlobalManager {
 			"PlayPause",
 			"SpeedHeader",
 			"SpeedVal",
+			"DefaultSpeed",
 			"RightArrowButton",
 			"LeftArrowButton",
 			"MarkA",
@@ -160,10 +163,7 @@ G.inputFile.addEventListener("focus", () => {G.inputFile.blur()});	// this is to
 G.playPause.addEventListener("click", playPauseControl);
 
 // Reset play speed
-G.speedHeader.addEventListener("click", () => {
-	G.speedVal.value = 1.0;
-	G.speedVal.dispatchEvent(new Event("input"));
-});
+G.defaultSpeed.addEventListener("click", resetPlaySpeed);
 
 // Change play speed
 G.speedVal.addEventListener("input", _changePlaySpeed);
@@ -172,6 +172,8 @@ function _changePlaySpeed() {
 	G.wavePlayer.setPlaybackRate(G.speedVal.value, true);
 }
 
+G.speedVal.addEventListener("focus", () => { G.speedVal.blur(); });
+
 G.jumpSelector.addEventListener("change", (evt) => {
 	evt.preventDefault();
 });
@@ -179,15 +181,25 @@ G.jumpSelector.addEventListener("change", (evt) => {
 G.leftArrowButton.addEventListener("click", leftButtonClick);
 G.rightArrowButton.addEventListener("click", rightButtonClick);
 
-G.zoomIn.addEventListener("click", () => {
+G.zoomIn.addEventListener("click", (evt) => {
 	G.zoomOut.disabled = false;
-	G.currentZoomFactor += G.zoomDelta;
+	if (evt.shiftKey) {
+		G.currentZoomFactor = G.storedZoomFactor;
+	} else {
+		G.currentZoomFactor += G.zoomDelta;
+		G.storedZoomFactor = G.currentZoomFactor;
+	}
 	G.wavePlayer.zoom(G.currentZoomFactor);
 });
 
-G.zoomOut.addEventListener("click", () => {
+G.zoomOut.addEventListener("click", (evt) => {
 	if (G.currentZoomFactor > G.minimumZoomFactor) {
-		G.currentZoomFactor -= G.zoomDelta;
+		if (evt.shiftKey) {
+			G.storedZoomFactor = G.currentZoomFactor;
+			G.currentZoomFactor = G.minimumZoomFactor;
+		} else {
+			G.currentZoomFactor -= G.zoomDelta;
+		}
 		G.wavePlayer.zoom(G.currentZoomFactor);
 		if (G.currentZoomFactor == G.minimumZoomFactor) {
 			G.zoomOut.disabled = true;
@@ -221,6 +233,8 @@ document.addEventListener("keydown", (evt) => {
 		markSectionStart();
 	} else if ((evt.key == "b") || (evt.key == "B")) {
 		markSectionEnd();
+	} else if ((evt.key == "d") || (evt.key == "D")) {
+		resetPlaySpeed();
 	}
 });
 
@@ -233,6 +247,7 @@ function readyCB() {
 		"PlayPause",
 		"SpeedHeader",
 		"SpeedVal",
+		"DefaultSpeed",
 		"LeftArrowButton",
 		"RightArrowButton",
 		"MarkA",
@@ -247,6 +262,7 @@ function playCB() {
 		"PlayPause",
 		"SpeedHeader",
 		"SpeedVal",
+		"DefaultSpeed",
 		"LeftArrowButton",
 		"RightArrowButton",
 		"MarkA",
@@ -261,6 +277,7 @@ function pauseCB() {
 		"PlayPause",
 		"SpeedHeader",
 		"SpeedVal",
+		"DefaultSpeed",
 		"LeftArrowButton",
 		"RightArrowButton",
 		"MarkA",
@@ -280,6 +297,11 @@ function playPauseControl() {
 	}
 }
 
+function resetPlaySpeed() {
+	G.speedVal.value = 1.0;
+	G.speedVal.dispatchEvent(new Event("input"));
+}
+
 function leftButtonClick() {
 	G.wavePlayer.setTime(G.wavePlayer.getCurrentTime() - Number(G.jumpSelector.value));
 }
@@ -290,11 +312,13 @@ function rightButtonClick() {
 
 function markSectionStart() {
 	G.sectionStart = G.wavePlayer.getCurrentTime();
+	G.markA.value = convertTimeRep(G.sectionStart) + " →";
 }
 
 function markSectionEnd() {
 	const currentTime = G.wavePlayer.getCurrentTime();
 	if (currentTime <= G.sectionStart)  return;
+	G.markA.value = "A";
 	G.sectionEnd = currentTime;
 	G.timeMarkerManager.addData(G.sectionStart, G.sectionEnd, "some notes");
 	G.timeMarkerManager.buildTable(G.abTable);
