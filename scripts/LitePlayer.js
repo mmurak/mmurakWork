@@ -342,7 +342,7 @@ function markSectionEnd() {
 
 function convertTimeRep(time) {
 	let formattedTime = [
-		Math.floor((time % 3600) / 60), // minutes
+		Math.floor(time / 60), // minutes
 		Math.floor(time % 60), // seconds
 	].map((v) => (v < 10 ? '0' + v : v)).join(':');
 	formattedTime += "." + ("" + Math.trunc(time * 100) % 100).padStart(2, "0");
