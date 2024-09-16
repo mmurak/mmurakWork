@@ -34,13 +34,17 @@ class TimeMarkerManager {
 			let startTime = document.createTextNode(convertTimeRep(elem[0]));
 			cellZero.appendChild(startTime);
 
+			// Dummy cell
+			let cellDummy = newRow.insertCell(2);
+			cellDummy.appendChild(document.createTextNode("〜"));
+
 			// Stop cell
-			let cellOne = newRow.insertCell(2);
+			let cellOne = newRow.insertCell(3);
 			let endTime = document.createTextNode(convertTimeRep(elem[1]));
 			cellOne.appendChild(endTime);
 
 			// Waste bin 🗑️
-			let cellWaste = newRow.insertCell(3);
+			let cellWaste = newRow.insertCell(4);
 			let cellWasteAnchor = document.createElement("a");
 			cellWasteAnchor.addEventListener("click", () => { this.clickCallback("del", newRow); });
 			cellWasteAnchor.innerHTML = "🗑️";
@@ -60,6 +64,7 @@ class GlobalManager {
 	constructor() {
 		this.inputFile = document.getElementById("InputFile");
 		this.timerField = document.getElementById("TimerField");
+		this.totalDuration = document.getElementById("TotalDuration");
 		this.zoomIn = document.getElementById("ZoomIn");
 		this.zoomOut = document.getElementById("ZoomOut");
 		this.playPause = document.getElementById("PlayPause");
@@ -254,8 +259,16 @@ function readyCB() {
 		"MarkB",
 	]);
 	G.zoomIn.disabled = false;
+
+	G.currentZoomFactor = Math.trunc(window.innerWidth / G.wavePlayer.getDuration());
+	G.minimumZoomFactor = G.currentZoomFactor;
+	G.zoomDelta = G.currentZoomFactor;
+	G.storedZoomFactor = G.currentZoomFactor;
+	G.wavePlayer.zoom(G.currentZoomFactor);
+
 	G.speedVal.value = 1.0;
 	G.speedDigits.innerHTML = Number(G.speedVal.value).toFixed(2);
+	G.totalDuration.innerHTML = convertTimeRep(G.wavePlayer.getDuration());
 }
 function playCB() {
 	G.fieldEnabler.setEnable([
@@ -329,7 +342,6 @@ function markSectionEnd() {
 
 function convertTimeRep(time) {
 	let formattedTime = [
-		Math.floor(time / 3600),
 		Math.floor((time % 3600) / 60), // minutes
 		Math.floor(time % 60), // seconds
 	].map((v) => (v < 10 ? '0' + v : v)).join(':');
@@ -343,7 +355,7 @@ function updateProgressFromSec(time) {
 
 function timeRepToSec(str) {
 	const seg = str.split(":");
-	return Number(Number(seg[0]) * 3600 + Number(seg[1]) * 60 + seg[2]);
+	return Number(seg[0]) * 60 + Number(seg[1]);
 }
 
 function abControl(command, node) {
@@ -355,7 +367,7 @@ function abControl(command, node) {
 	} else {
 		G.playStartMark = Number(timeRepToSec(node.cells[1].innerHTML));
 		G.wavePlayer.setTime(G.playStartMark);
-		G.playEndMark =  Number(timeRepToSec(node.cells[2].innerHTML));
+		G.playEndMark =  Number(timeRepToSec(node.cells[3].innerHTML));
 		G.wavePlayer.play();
 	}
 }
