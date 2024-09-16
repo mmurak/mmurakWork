@@ -58,6 +58,10 @@ class TimeMarkerManager {
 			row.cells[0].children[0].disabled = flag;
 		}
 	}
+	eraseAllData(tableObj) {
+		tableObj.innerHTML = "";
+		this.dataPool = [];
+	}
 }
 
 class GlobalManager {
@@ -269,6 +273,8 @@ function readyCB() {
 	G.speedVal.value = 1.0;
 	G.speedDigits.innerHTML = Number(G.speedVal.value).toFixed(2);
 	G.totalDuration.innerHTML = convertTimeRep(G.wavePlayer.getDuration());
+
+	G.timeMarkerManager.eraseAllData(G.abTable);
 }
 function playCB() {
 	G.fieldEnabler.setEnable([
