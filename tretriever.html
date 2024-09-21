@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Cheer me up!</title>
+		<link rel="shortcut icon" href="./red-kiwi-bird.png">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<link rel="stylesheet" href="./retriever.css">
+	</head>
+	<body>
+0. <input type="button" id="ClearButton" value="Clear Input Area" onclick="clearInputArea();"/>
+<br>
+1. <textarea id="EntryArea" cols="80" rows="20"></textarea>
+<br>
+2. <label for="JingleOffset">Jingle offset time (mSec.): </label>
+<input type="textfield" id="JingleOffset" value="3483" maxlength="6"/>
+<br>
+3. <input type="button" id="ProcessButton" value="Engage!" onclick="engageProcess();"/>
+<br>
+4. <textarea id="TranscriptArea" cols="80" rows="20"></textarea>
+<br>
+5. <input type="button" id="SaveButton" value="Save" onclick="saveTranscript();"/>
+<script>
+class GlobalManager {
+	constructor() {
+		this.entryArea = document.getElementById("EntryArea");
+		this.jingleOffset = document.getElementById("JingleOffset");
+		this.transcriptArea = document.getElementById("TranscriptArea");
+	}
+}
+const G = new GlobalManager();
+
+G.entryArea.focus();
+
+function engageProcess() {
+	let str = G.entryArea.value;
+	let offsetValue = Number(G.jingleOffset.value);
+	const regexp = /"text":".+?","time":\d+/g;
+	let transcripts = str.match(regexp);
+	if (transcripts == null) {
+		G.transcriptArea.value = "";
+		alert("There is no transcripts in this page.");
+		return;
+	}
+	let result = "";
+	for (let line of transcripts) {
+		const item = line.split(/","time":/);
+		let seg = item[0].substring(8);
+		seg = seg.replaceAll('\\"', '"');
+		seg = seg.replaceAll('\\n', ' ');
+		const timeMark = Number(item[1]) + offsetValue;
+		result += "[[" + msToHHMMSS(timeMark) + "]] " + seg + "\n";
+	}
+	G.transcriptArea.value = result;
+}
+
+function clearInputArea() {
+	G.entryArea.value = "";
+	G.entryArea.focus();
+}
+
+function saveTranscript() {
+	const link = document.createElement("a");
+	const file = new Blob([G.transcriptArea.value], { type: "text/plain" });
+	link.href = URL.createObjectURL(file);
+	link.download = "transcript.txt";
+	link.click();
+	URL.revokeObjectURL(link.href);
+}
+
+// utility functions
+
+function fixDig(a, d) {
+	return String(a).padStart(d, "0");
+}
+
+function msToHHMMSS(parm) {
+	const milli = parm % 1000;
+	const sec = Math.floor(parm / 1000) % 60;
+	const min = Math.floor(parm / 60000) % 60;
+	const hour = Math.floor(parm / 3600000);
+	return fixDig(hour, 2) + ":" + fixDig(min, 2) + ":" + fixDig(sec, 2) + "." + fixDig(milli, 3);
+}
+</script>
+</body>
+</html>
